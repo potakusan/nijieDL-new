@@ -1,0 +1,16 @@
+{
+  "name": "nijiedownloader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.ts",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/jquery": "^3.3.30",
+    "axios": "^0.19.0",
+    "jquery": "^3.4.1"
+  }
+}
