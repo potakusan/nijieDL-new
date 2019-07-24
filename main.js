@@ -18,15 +18,15 @@ $(() => __awaiter(this, void 0, void 0, function* () {
         */
         formatDate(date, format) {
             if (!format)
-                format = 'YYYY-MM-DD hh:mm:ss.SSS';
+                format = "YYYY-MM-DD hh:mm:ss.SSS";
             format = format.replace(/YYYY/g, date.getFullYear());
-            format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2));
-            format = format.replace(/DD/g, ('0' + date.getDate()).slice(-2));
-            format = format.replace(/hh/g, ('0' + date.getHours()).slice(-2));
-            format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2));
-            format = format.replace(/ss/g, ('0' + date.getSeconds()).slice(-2));
+            format = format.replace(/MM/g, ("0" + (date.getMonth() + 1)).slice(-2));
+            format = format.replace(/DD/g, ("0" + date.getDate()).slice(-2));
+            format = format.replace(/hh/g, ("0" + date.getHours()).slice(-2));
+            format = format.replace(/mm/g, ("0" + date.getMinutes()).slice(-2));
+            format = format.replace(/ss/g, ("0" + date.getSeconds()).slice(-2));
             if (format.match(/S/g)) {
-                const milliSeconds = ('00' + date.getMilliseconds()).slice(-3);
+                const milliSeconds = ("00" + date.getMilliseconds()).slice(-3);
                 const length = format.match(/S/g).length;
                 for (let i = 0; i < length; i++)
                     format = format.replace(/S/, milliSeconds.substring(i, i + 1));
@@ -51,7 +51,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
         /**
         * getUrlVars - get the parameters of the current page
         *
-        * @return vars {string[]}  an array of the parameters of the current page
+        * @return vars {Vars}  an array of the parameters of the current page
         */
         getUrlVars() {
             let vars = {};
@@ -95,7 +95,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
     };
     const mainFunc = class {
         constructor() {
-            this.geturiv = $("html").html().match(/\/\/localhost:8080\/nijieNew\/nijieDL-new\/main\.js.*?"/)[0];
+            this.geturiv = $("html").html().match(/\/\/nijie.poyashi.me\/main\.js.*?"/)[0];
             this.defaultExps = {
                 "mozamoza": new RegExp(/<img class="mozamoza ngtag" illust_id=.*? user_id=/g),
                 "mainContainer": new RegExp(/<div class="clear-left clearfix">.*?<div class="kabu">/g),
@@ -107,6 +107,8 @@ $(() => __awaiter(this, void 0, void 0, function* () {
             };
             this.promptText = "DLするページ範囲を選択してください。\n書式:XX-YY(XXページからYYページまで) または ZZ(ZZページのみ)";
             this.commonErrorMes = "エラーが発生しました。コンソールを参照してください。";
+            this.box = "mozamoza";
+            this.urlPrefix = "?";
             this.str = [];
             this.array = [];
         }
@@ -117,11 +119,15 @@ $(() => __awaiter(this, void 0, void 0, function* () {
             this.endPoint = null;
             console.log("destructor method called - all processes has been perished");
         }
+        setTarget(input) {
+            this.target = input;
+            return;
+        }
         /**
         * private ajax - main method to obtain the html source of the specific content
         *
         * @param  {string} url - specific
-        * @return {Promise<string>}
+        * @return {{data:string;error:boolean}}
         */
         ajax(url) {
             return __awaiter(this, void 0, void 0, function* () {
@@ -152,105 +158,63 @@ $(() => __awaiter(this, void 0, void 0, function* () {
         }
         likeduser() {
             return __awaiter(this, void 0, void 0, function* () {
-                const range = this.showRangePrompt();
-                if (!range) {
-                    return 1;
-                }
-                common.showBg();
-                if (~range.indexOf("-")) {
-                    const ranges = range.split("-");
-                    this.startPoint = Number(ranges[0]);
-                    this.endPoint = Number(ranges[1]);
-                    for (let i = this.startPoint; i < this.endPoint + 1; ++i) {
-                        const { res, error } = yield this.scraper("like_user_view.php", "?p=" + i);
-                        if (error) {
-                            return 1;
-                        }
-                        Array.prototype.push.apply(this.array, res);
-                    }
-                }
-                else {
-                    const { res, error } = yield this.scraper("like_user_view.php", "?p=" + range);
-                    if (error) {
-                        return 1;
-                    }
-                    Array.prototype.push.apply(this.array, res);
-                }
-                if (this.array) {
-                    yield this.getImg();
-                    return 0;
-                }
-                return 1;
+                this.container = "mainContainer";
+                return this.execute();
             });
         }
         userpage() {
             return __awaiter(this, void 0, void 0, function* () {
                 const queries = common.getUrlVars();
-                const range = this.showRangePrompt();
                 const fileName = window.location.href.match(".+/(.+?)([\?#;].*)?$")[1];
-                const matcher = fileName === "members_illust.php" ? "membersMainContainer" : "memIndexToApplication";
-                if (!range) {
-                    return 1;
-                }
-                common.showBg();
-                if (~range.indexOf("-")) {
-                    const ranges = range.split("-");
-                    this.startPoint = Number(ranges[0]);
-                    this.endPoint = Number(ranges[1]);
-                    for (let i = this.startPoint; i < this.endPoint + 1; ++i) {
-                        const { res, error } = yield this.scraper(fileName, "?id=" + queries["id"] + "&p=" + i, matcher);
-                        if (error) {
-                            return 1;
-                        }
-                        Array.prototype.push.apply(this.array, res);
-                    }
-                }
-                else {
-                    const { res, error } = yield this.scraper(fileName, "?id=" + queries["id"] + "&p=" + range, matcher);
-                    if (error) {
-                        return 1;
-                    }
-                    Array.prototype.push.apply(this.array, res);
-                }
-                if (this.array) {
-                    yield this.getImg();
-                    return 0;
-                }
-                return 1;
+                this.container = fileName === "members_illust.php" ? "membersMainContainer" : "memIndexToApplication";
+                this.urlPrefix = "?id=" + queries["id"];
+                return this.execute();
             });
         }
         likeview() {
             return __awaiter(this, void 0, void 0, function* () {
                 const queries = common.getUrlVars();
-                const range = this.showRangePrompt();
-                if (!range) {
-                    return 1;
-                }
+                this.container = "memIndex";
+                this.urlPrefix = "?id=" + queries["id"];
+                return this.execute();
+            });
+        }
+        illustview() {
+            return __awaiter(this, void 0, void 0, function* () {
+                this.container = "mainContainer";
+                return this.execute();
+            });
+        }
+        okazu() {
+            return __awaiter(this, void 0, void 0, function* () {
                 common.showBg();
-                if (~range.indexOf("-")) {
-                    const ranges = range.split("-");
-                    this.startPoint = Number(ranges[0]);
-                    this.endPoint = Number(ranges[1]);
-                    for (let i = this.startPoint; i < this.endPoint + 1; ++i) {
-                        const { res, error } = yield this.scraper("user_like_illust_view.php", "?id=" + queries["id"] + "&p=" + i, "memIndex");
-                        if (error) {
-                            return 1;
-                        }
-                        Array.prototype.push.apply(this.array, res);
-                    }
+                const html = $("#okazu_list").html();
+                const matched = html.match(/<a href="\/view.php\?id=\d{1,15}"/g);
+                for (let i = 0; i < matched.length; ++i) {
+                    this.array.push(matched[i].match(/\d{1,15}/g)[0]);
+                    $("#details").html(`<p>PROGRESS: ${i} of ${matched.length} (${Math.round(i / matched.length) * 100} %)<br>${matched[i].match(/\d{1,15}/g)[0]}</p>`);
                 }
-                else {
-                    const { res, error } = yield this.scraper("user_like_illust_view.php", "?id=" + queries["id"] + "&p=" + range, "memIndex");
-                    if (error) {
-                        return 1;
-                    }
-                    Array.prototype.push.apply(this.array, res);
+                yield this.getImg();
+                return 0;
+            });
+        }
+        search() {
+            return __awaiter(this, void 0, void 0, function* () {
+                let queries = common.getUrlVars();
+                if (!queries["sort"]) {
+                    queries["sort"] = "0";
                 }
-                if (this.array) {
-                    yield this.getImg();
-                    return 0;
+                if (!queries["illust_type"]) {
+                    queries["illust_type"] = "0";
                 }
-                return 1;
+                if (!queries["word"]) {
+                    queries["word"] = "";
+                }
+                queries["sort"] = Number(queries["sort"]);
+                queries["illust_type"] = Number(queries["illust_type"]);
+                this.urlPrefix = `?sort=${queries["sort"]}&illust_type=${queries["illust_type"]}&word=${queries["word"]}`;
+                this.container = "mainContainerNotLeft";
+                return this.execute();
             });
         }
         favorite() {
@@ -260,6 +224,13 @@ $(() => __awaiter(this, void 0, void 0, function* () {
                     queries["sort"] = 0;
                 }
                 queries["sort"] = Number(queries["sort"]);
+                this.container = "formMethod";
+                this.urlPrefix = "?sort=" + queries["sort"];
+                return this.execute();
+            });
+        }
+        execute() {
+            return __awaiter(this, void 0, void 0, function* () {
                 const range = this.showRangePrompt();
                 if (!range) {
                     return 1;
@@ -270,7 +241,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
                     this.startPoint = Number(ranges[0]);
                     this.endPoint = Number(ranges[1]);
                     for (let i = this.startPoint; i < this.endPoint + 1; ++i) {
-                        const { res, error } = yield this.scraper("okiniiri.php", "?sort=" + queries["sort"] + "&p=" + i, "formMethod");
+                        const { res, error } = yield this.scraper(this.urlPrefix + "&p=" + i);
                         if (error) {
                             return 1;
                         }
@@ -278,7 +249,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
                     }
                 }
                 else {
-                    const { res, error } = yield this.scraper("okiniiri.php", "?sort=" + queries["sort"] + "&p=" + range, "formMethod");
+                    const { res, error } = yield this.scraper(this.urlPrefix + "&p=" + range);
                     if (error) {
                         return 1;
                     }
@@ -292,9 +263,18 @@ $(() => __awaiter(this, void 0, void 0, function* () {
             });
         }
         showRangePrompt() {
-            return window.prompt(this.promptText, "")
-                .replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => { return String.fromCharCode(s.charCodeAt(0) - 0xFEE0); })
-                .replace(/(ー|－|―)/g, "-");
+            let res = window.prompt(this.promptText, "");
+            if (!res) {
+                return null;
+            }
+            res = res.replace(/[Ａ-Ｚａ-ｚ０-９]/g, s => {
+                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+            }).replace(/(ー|－|―)/g, "-");
+            if (!res.match(/^(\d+\-\d+|\d+)$/)) {
+                alert("フォーマットにエラーがあります。");
+                return this.showRangePrompt();
+            }
+            return res;
         }
         /**
          * private scraper
@@ -304,19 +284,21 @@ $(() => __awaiter(this, void 0, void 0, function* () {
          * @param  {string} box - from defaultExps, the target container of of scraping
          * @return  {Promise<{res?:string[],error:boolean}>}
          */
-        scraper(uri, params, container = "mainContainer", box = "mozamoza") {
+        scraper(params) {
             return __awaiter(this, void 0, void 0, function* () {
                 let array = [];
-                const { data, error } = yield this.ajax("//nijie.info/" + uri + params);
+                const url = "//nijie.info/" + this.target + params;
+                const { data, error } = yield this.ajax(url);
+                console.log(url);
                 try {
                     if (error) {
                         throw new Error("thrownError");
                     }
-                    let scrap = data.match(this.defaultExps[container]);
+                    let scrap = data.match(this.defaultExps[this.container]);
                     if (!scrap) {
                         throw new Error("noimg");
                     }
-                    scrap = scrap[0].match(this.defaultExps[box]);
+                    scrap = scrap[0].match(this.defaultExps[this.box]);
                     if (!scrap) {
                         throw new Error("noimg");
                     }
@@ -324,7 +306,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
                         const targetId = scrap[s].match(/\d{1,7}/g)[0];
                         array.push(targetId);
                         const current = params.match(/(?<=\&p\=)\d+/)[0];
-                        $("#details").html(`<p>Getting illust summary /  (${current} of ${this.startPoint ? this.endPoint - this.startPoint + 1 : current})</p>`);
+                        $("#details").html(`<p>GETTING ILLUST SUMMARY: (${current} of ${this.startPoint ? this.endPoint - this.startPoint + 1 : current})</p>`);
                     }
                     return { res: array, error: false };
                 }
@@ -503,7 +485,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
             return true;
         }
         /**
-        * private post - description
+        * public post - description
         *
         * @param  {string} query url query parameter to send
         * @param  {string} params url parameters to set up
@@ -535,6 +517,44 @@ $(() => __awaiter(this, void 0, void 0, function* () {
             } while (true);
             localStorage.setItem(id, JSON.stringify(datalist));
         }
+        sender() {
+            let tmp;
+            $("html").append("<div id='wrapper'><div id='content_downloader_wrapper'>Loading data. Please wait</div></div><img src='' id='thumbs' style='position: absolute;left: 1376px;top: 461px;display:none;z-index: 114514;border: 1px solid #777;box-shadow: 0px 0px 4px #222;'><style>" +
+                "body{transition:.2s; filter:blur(0px)}" +
+                "#content_downloader_wrapper button#send, #content_downloader_wrapper button.close {padding: 10px;font-family: YuGothic,'Yu Gothic',sans-serif;color: #222;width: 30%;font-weight: 500;}" +
+                "#content_downloader_wrapper button#send{background-color:#e6fff9;}" +
+                "#content_downloader_wrapper button.close{background-color:#dddddd;}" +
+                "#content_downloader_wrapper button { background: #efefef; border: 1px solid #ccc; padding: 5px;}" +
+                "#content_downloader_wrapper h1 {font-family: YuGothic,'Yu Gothic',sans-serif;font-weight: 300; border-bottom: 1px solid #888; width: 60%;margin: 5px auto 18px auto; color: #333;}" +
+                "#content_downloader_wrapper table{margin:15px auto; border:1px solid #ccc;}" +
+                "#content_downloader_wrapper{border:1px solid #222; box-shadow:0px 0px 4px #ccc; border-radius:2px; width:80%; height:80%; overflow-y:scroll; padding:15px; background:#fff; color:#222;}" +
+                "#wrapper{text-align:center;position:fixed;z-index:9999; top:0; opacity:1; color:#aaa;background:rgba(65,65,65,0.85);width:100%;height:100%;display:flex; flex-direction:column; justify-content:center;align-items:center;}" +
+                ".pcursor{cursor:pointer !important;}" +
+                "</style>");
+            $("body").css("filter", "blur(15px)");
+            $("#wrapper").fadeIn();
+            if (this.geturiv.match("noconf=1") && localStorage.length > 0) {
+                tmp = "<h1>Confirm</h1><p class='sure'>" + localStorage.length + "個のアイテムをダウンローダに送信します。</p><p><button id='send'>Send</button> <button class='close'>Close</button></p><p style='user-select:none;'><input type='checkbox' class='daias pcursor' id='daias'><label for='daias'>送信後に保存されたデータを削除</label></input> | <a class='delallitems pcursor'>保存されたデータを削除</a><table><tr><td>Title</td><td>Illustrator</td><td>Id</td><td>Url</td><td>Delete</td></tr>";
+                for (let illust in localStorage) {
+                    if (localStorage.getItem(illust) && illust.match(/illust/)) {
+                        const illustr = $.parseJSON(localStorage.getItem(illust));
+                        tmp += "<tr><td>" + illustr["title"] + "</td><td>" + illustr["illustrator"] + "</td><td><a href='http://nijie.info/view.php?id=" + illustr["id"] + "' target='_blank'>" + illustr["id"] + "</a></td><td><a href='http:" + illustr["url"] + "' target='_blank' class='thumb'>http:" + illustr["url"] + "</a></td><td><button class='delbtn' id='" + illust + "'>Delete</button></td></tr>";
+                    }
+                }
+                tmp += `</table>
+        <a href='#' class='close'>× Close</a>
+        <p>Nijie Downloader - <a href='https://nijie.poyashi.me/' target='_blank'>nijie.poyashi.me</a> powered by <a href='http://twitter.com/#!/_2r5' target='_blank'>@_2r5</a></p>`;
+            }
+            else if (this.geturiv.match("noconf=1") && localStorage.length == 0) {
+                tmp = "<h1>Error</h1><p class='sure'>キューされたアイテムが存在しません。</p><a class='close' style='cursor:pointer;'>Close</a>";
+            }
+            else {
+                tmp = "<h1>Error</h1><p class='sure'>パラメータの値が不正です。<br>storage=<i>Number</i> および noconf=<i>Number</i> を指定し、ページを再読込してください。 </p><a class='close' style='cursor:pointer;'>Close</a>";
+            }
+            $("#content_downloader_wrapper").html("");
+            $("#content_downloader_wrapper").append(tmp);
+            return 0;
+        }
     };
     const common = new commonFunc();
     function init() {
@@ -546,8 +566,9 @@ $(() => __awaiter(this, void 0, void 0, function* () {
             if (!window.location.href.match("nijie.info")) {
                 return alert("対応サイト上でのみ本ブックマークレットをお使いいただけます。");
             }
-            var currentPage = window.location.href.match(".+/(.+?)([\?#;].*)?$")[1];
+            const currentPage = window.location.href.match(".+/(.+?)([\?#;].*)?$")[1];
             const main = new mainFunc();
+            main.setTarget(currentPage);
             try {
                 const res = () => __awaiter(this, void 0, void 0, function* () {
                     switch (currentPage) {
@@ -557,7 +578,14 @@ $(() => __awaiter(this, void 0, void 0, function* () {
                         case "members_illust.php":
                         case "members_dojin.php": return yield main.userpage();
                         case "okiniiri.php": return yield main.favorite();
+                        case "illust_view.php": return yield main.illustview();
                         case "user_like_illust_view.php": return yield main.likeview();
+                        case "okazu.php": return yield main.okazu();
+                        case "search.php":
+                        case "search_all.php":
+                        case "search_dojin.php": return yield main.search();
+                        case "index.php":
+                        case "nijie.info/": return main.sender();
                         default: return 2;
                     }
                 });
@@ -569,7 +597,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
                 });
             }
             catch (e) {
-                alert("エラーが発生したため処理を続行できません。\nコマンドログを確認してください。");
+                alert("エラーが発生したため処理を続行できません。\nコンソールを確認してください。");
                 console.log(e);
                 _destruct();
             }
@@ -577,4 +605,50 @@ $(() => __awaiter(this, void 0, void 0, function* () {
         });
     }
     init();
+    const nijieDLTopsend = () => {
+        var dataTmp = JSON.stringify(localStorage);
+        if ($(".daias").is(":checked")) {
+            localStorage.clear();
+        }
+        const main = new mainFunc();
+        main.post(dataTmp, "?lang=jp&storage=2");
+    };
+    $(document).on("click", "#send", () => nijieDLTopsend());
+    $.fn.thumbnail = function () {
+        return this.each(() => {
+            $(this).hover((e) => {
+                $("#thumbs").attr("src", $(":hover")[7]["href"].replace("nijie.info/", "nijie.info/__rs_l120x120/"));
+                $("#thumbs").css("left", e.pageX + 10);
+                $("#thumbs").css("top", e.pageY + 10);
+                $("#thumbs").show();
+            }, function () {
+                $("#thumbs").hide();
+            });
+        });
+    };
+    $(".thumb").thumbnail();
+    $(document).on("click", ".delallitems", () => {
+        const delAllItems = () => {
+            localStorage.clear();
+            let errmes = `
+      <h1>Error</h1>
+      <p class="sure">キューされたアイテムが存在しません。</p>
+      <a class="close" style="cursor:pointer;">Close</a>`;
+            $("#content_downloader_wrapper").html(errmes);
+        };
+        if (confirm("キューされたアイテムを削除しますか？")) {
+            delAllItems();
+        }
+    });
+    $(document).on("click", ".delbtn", function () {
+        if (confirm("このアイテムをリストから削除しますか?")) {
+            localStorage.removeItem($(this).attr("id"));
+            $("#" + $(this).attr("id")).parent().parent().remove();
+            $(".sure").html(localStorage.length + "個のアイテムをダウンローダに送信します。");
+            if (localStorage.length == 0) {
+                var errmes = '<h1>Error</h1><p class="sure">キューされたアイテムが存在しません。</p><a class="close" style="cursor:pointer;">Close</a><script>$(".close").on("click",function(){$("body").css("filter","blur(0px)"); $("#wrapper").fadeOut("slow",function(){$("#wrapper").remove();})});</script>';
+                $("#content_downloader_wrapper").html(errmes);
+            }
+        }
+    });
 }));
