@@ -537,9 +537,7 @@ $(async ()=>{
             tmp += "<tr><td>" + illustr["title"] + "</td><td>" + illustr["illustrator"] + "</td><td><a href='http://nijie.info/view.php?id=" + illustr["id"] + "' target='_blank'>" + illustr["id"] + "</a></td><td><a href='http:" + illustr["url"] + "' target='_blank' class='thumb'>http:" + illustr["url"] + "</a></td><td><button class='delbtn' id='" + illust + "'>Delete</button></td></tr>"
           }
         }
-        tmp += `</table>
-        <a href='#' class='close'>× Close</a>
-        <p>Nijie Downloader - <a href='https://nijie.poyashi.me/' target='_blank'>nijie.poyashi.me</a> powered by <a href='http://twitter.com/#!/_2r5' target='_blank'>@_2r5</a></p>`;
+        tmp += `</table><a href='#' class='close'>× Close</a><p>Nijie Downloader - <a href='https://nijie.poyashi.me/' target='_blank'>nijie.poyashi.me</a> powered by <a href='http://twitter.com/#!/_2r5' target='_blank'>@_2r5</a></p>`;
       } else if (this.geturiv.match("noconf=1") && localStorage.length == 0) {
         tmp = "<h1>Error</h1><p class='sure'>キューされたアイテムが存在しません。</p><a class='close' style='cursor:pointer;'>Close</a>";
       } else {
@@ -627,10 +625,7 @@ $(async ()=>{
   $(document).on("click",".delallitems",()=>{
     const delAllItems = ()=>{
       localStorage.clear();
-      let errmes = `
-      <h1>Error</h1>
-      <p class="sure">キューされたアイテムが存在しません。</p>
-      <a class="close" style="cursor:pointer;">Close</a>`;
+      const errmes = `<h1>Error</h1><p class="sure">キューされたアイテムが存在しません。</p><a class="close" style="cursor:pointer;">Close</a>`;
       $("#content_downloader_wrapper").html(errmes);
     }
     if(confirm("キューされたアイテムを削除しますか？")){
@@ -644,7 +639,7 @@ $(async ()=>{
       $("#" + $(this).attr("id")).parent().parent().remove();
       $(".sure").html(localStorage.length + "個のアイテムをダウンローダに送信します。");
       if(localStorage.length == 0){
-        var errmes = '<h1>Error</h1><p class="sure">キューされたアイテムが存在しません。</p><a class="close" style="cursor:pointer;">Close</a><script>$(".close").on("click",function(){$("body").css("filter","blur(0px)"); $("#wrapper").fadeOut("slow",function(){$("#wrapper").remove();})});</script>';
+        const errmes = '<h1>Error</h1><p class="sure">キューされたアイテムが存在しません。</p><a class="close" style="cursor:pointer;">Close</a><script>$(".close").on("click",function(){$("body").css("filter","blur(0px)"); $("#wrapper").fadeOut("slow",function(){$("#wrapper").remove();})});</script>';
         $("#content_downloader_wrapper").html(errmes);
       }
     }
