@@ -22,7 +22,7 @@ $(async ()=>{
       if (format.match(/S/g)) {
         const milliSeconds = ('00' + date.getMilliseconds()).slice(-3);
         const length = format.match(/S/g).length;
-        for (var i = 0; i < length; i++) format = format.replace(/S/, milliSeconds.substring(i, i + 1));
+        for (let i = 0; i < length; i++) format = format.replace(/S/, milliSeconds.substring(i, i + 1));
       }
       return format;
     }
@@ -46,15 +46,14 @@ $(async ()=>{
     *
     * @return vars {string[]}  an array of the parameters of the current page
     */
-    public getUrlVars():string[]{
-      let vars:string[] = [];
+    public getUrlVars():{ [key:string]: number|string}{
+      let vars:{ [key:string]: number|string} = {};
       let array:string[] = [];
       const url:string = window.location.search;
       const hash:string[] = url.slice(1).split("&");
       const max:number = hash.length;
       for (let i = 0; i < max; i++) {
         array = hash[i].split("=");
-        vars.push(array[0]);
         vars[array[0]] = array[1];
       }
       return vars;
@@ -66,9 +65,18 @@ $(async ()=>{
      * @return {void}
      */
     public showBg():void{
-      $("html").append("<div id='wrapper'><div class='throbber throbber_large'></div><p>Now Loading...<br><span id='details'></span></p><p><span id='error'></span></p></div><style>#wrapper{text-align:center;position:fixed;z-index:9999; top:0; opacity:1; color:#aaa;background:rgba(65,65,65,0.85);width:100%;height:100%;display:flex; flex-direction:column; justify-content:center;align-items:center;} .throbber {  width: 50px;  height: 50px; padding-bottom:15px; display: -webkit-box;  display: -webkit-flex;  display: -moz-box;  display: -ms-flexbox;  display: flex;  -webkit-box-align: center;  -webkit-align-items: center;  -moz-box-align: center;  -ms-flex-align: center;  align-items: center;  -webkit-box-pack: center;  -webkit-justify-content: center;  -moz-box-pack: center;  -ms-flex-pack: center;  justify-content: center;} .throbber:after {  display: block;  position: relative;  width: 20px;  height: 20px;  -webkit-animation: rotate 0.6s linear infinite;  -moz-animation: rotate 0.6s linear infinite;  -ms-animation: rotate 0.6s linear infinite;  -o-animation: rotate 0.6s linear infinite;  animation: rotate 0.6s linear infinite;  -webkit-border-radius: 100%;  -moz-border-radius: 100%;  border-radius: 100%;  border-top: 1px solid #545a6a;  border-bottom: 1px solid #d4d4db;  border-left: 1px solid #545a6a;  border-right: 1px solid #d4d4db;  content: '';  opacity: .5;} .throbber.throbber_large:after {  width: 40px;  height: 40px;}@keyframes rotate {  0% {    transform: rotateZ(-360deg);    -webkit-transform: rotateZ(-360deg);    -moz-transform: rotateZ(-360deg);    -o-transform: rotateZ(-360deg);  }  100% {    transform: rotateZ(0deg);    -webkit-transform: rotateZ(0deg);    -moz-transform: rotateZ(0deg);    -o-transform: rotateZ(0deg);  }}@-webkit-keyframes rotate {  0% {    transform: rotateZ(-360deg);    -webkit-transform: rotateZ(-360deg);    -moz-transform: rotateZ(-360deg);    -o-transform: rotateZ(-360deg);  }  100% {    transform: rotateZ(0deg);    -webkit-transform: rotateZ(0deg);    -moz-transform: rotateZ(0deg);    -o-transform: rotateZ(0deg);  }}@-moz-keyframes rotate {  0% {    transform: rotateZ(-360deg);    -webkit-transform: rotateZ(-360deg);    -moz-transform: rotateZ(-360deg);    -o-transform: rotateZ(-360deg);  }  100% {    transform: rotateZ(0deg);    -webkit-transform: rotateZ(0deg);    -moz-transform: rotateZ(0deg);    -o-transform: rotateZ(0deg);  }}@-o-keyframes rotate {  0% {    transform: rotateZ(-360deg);    -webkit-transform: rotateZ(-360deg);    -moz-transform: rotateZ(-360deg);    -o-transform: rotateZ(-360deg);  }  100% {    transform: rotateZ(0deg);    -webkit-transform: rotateZ(0deg);    -moz-transform: rotateZ(0deg);    -o-transform: rotateZ(0deg);  }}</style>")
+      $("html").append("<div id='_wrapper'><div class='throbber throbber_large'></div><p>Now Loading...<br><span id='details'></span></p><p><span id='error'></span></p></div><style>#_wrapper{text-align:center;position:fixed;z-index:9999; top:0; opacity:1; color:#aaa;background:rgba(65,65,65,0.85);width:100%;height:100%;display:flex; flex-direction:column; justify-content:center;align-items:center;} .throbber {  width: 50px;  height: 50px; padding-bottom:15px; display: -webkit-box;  display: -webkit-flex;  display: -moz-box;  display: -ms-flexbox;  display: flex;  -webkit-box-align: center;  -webkit-align-items: center;  -moz-box-align: center;  -ms-flex-align: center;  align-items: center;  -webkit-box-pack: center;  -webkit-justify-content: center;  -moz-box-pack: center;  -ms-flex-pack: center;  justify-content: center;} .throbber:after {  display: block;  position: relative;  width: 20px;  height: 20px;  -webkit-animation: rotate 0.6s linear infinite;  -moz-animation: rotate 0.6s linear infinite;  -ms-animation: rotate 0.6s linear infinite;  -o-animation: rotate 0.6s linear infinite;  animation: rotate 0.6s linear infinite;  -webkit-border-radius: 100%;  -moz-border-radius: 100%;  border-radius: 100%;  border-top: 1px solid #545a6a;  border-bottom: 1px solid #d4d4db;  border-left: 1px solid #545a6a;  border-right: 1px solid #d4d4db;  content: '';  opacity: .5;} .throbber.throbber_large:after {  width: 40px;  height: 40px;}@keyframes rotate {  0% {    transform: rotateZ(-360deg);    -webkit-transform: rotateZ(-360deg);    -moz-transform: rotateZ(-360deg);    -o-transform: rotateZ(-360deg);  }  100% {    transform: rotateZ(0deg);    -webkit-transform: rotateZ(0deg);    -moz-transform: rotateZ(0deg);    -o-transform: rotateZ(0deg);  }}@-webkit-keyframes rotate {  0% {    transform: rotateZ(-360deg);    -webkit-transform: rotateZ(-360deg);    -moz-transform: rotateZ(-360deg);    -o-transform: rotateZ(-360deg);  }  100% {    transform: rotateZ(0deg);    -webkit-transform: rotateZ(0deg);    -moz-transform: rotateZ(0deg);    -o-transform: rotateZ(0deg);  }}@-moz-keyframes rotate {  0% {    transform: rotateZ(-360deg);    -webkit-transform: rotateZ(-360deg);    -moz-transform: rotateZ(-360deg);    -o-transform: rotateZ(-360deg);  }  100% {    transform: rotateZ(0deg);    -webkit-transform: rotateZ(0deg);    -moz-transform: rotateZ(0deg);    -o-transform: rotateZ(0deg);  }}@-o-keyframes rotate {  0% {    transform: rotateZ(-360deg);    -webkit-transform: rotateZ(-360deg);    -moz-transform: rotateZ(-360deg);    -o-transform: rotateZ(-360deg);  }  100% {    transform: rotateZ(0deg);    -webkit-transform: rotateZ(0deg);    -moz-transform: rotateZ(0deg);    -o-transform: rotateZ(0deg);  }}</style>")
       $("#details").html("");
       return;
+    }
+
+    /**
+     * public removeBg - remove loading screen after finishing all processes or when occuring error
+     *
+     * @return {void}
+     */
+    public removeBg():void{
+      $("#_wrapper").fadeOut("slow",()=>$("#_wrapper").remove());
     }
 
     /**
@@ -77,7 +85,7 @@ $(async ()=>{
      * @return {void}
      */
     public noImg():void{
-      $("#details").html("<p>表示する画像が見つかりませんでした</p><p><a href='#' class='close'>× 閉じる</a></p><script>$('.close').on('click',function(){$('#wrapper').fadeOut('slow',function(){$('#wrapper').remove();});return false;});</script>");
+      $("#details").html("<p>表示する画像が見つかりませんでした</p><p><a href='#' class='close'>× 閉じる</a></p><script>$('.close').on('click',function(){$('#_wrapper').fadeOut('slow',function(){$('#_wrapper').remove();});return false;});</script>");
       return;
     }
 
@@ -85,7 +93,7 @@ $(async ()=>{
 
   const mainFunc = class {
     private str:string[];
-    private array:string[];
+    private array:(string|number)[];
     private geturiv:string = $("html").html().match(/\/\/localhost:8080\/nijieNew\/nijieDL-new\/main\.js.*?"/)[0];
     private defaultExps:{[key:string]:RegExp} = {
       "mozamoza" : new RegExp(/<img class="mozamoza ngtag" illust_id=.*? user_id=/g),
@@ -93,91 +101,168 @@ $(async ()=>{
       "mainContainerNotLeft" : new RegExp(/<div class="clearfix">.*?<div class="kabu">/g),
       "memIndex" : new RegExp(/<div class="mem-index clearboth">.*?<div class="kabu">/g),
       "membersMainContainer" : new RegExp(/<div id="members_dlsite_left" class="clearboth">.*?<div id="members_right">/g),
-      "memIndexToApplication": new RegExp(/<div class=("|')mem-index clearboth("|')>(.|\n)*?<script type=("|')application\/ld\+json("|')>/g)
+      "memIndexToApplication" : new RegExp(/<div class=("|')mem-index clearboth("|')>(.|\n)*?<script type=("|')application\/ld\+json("|')>/g),
+      "formMethod" : new RegExp(/<form method="post" name="content_delete".*?<div class="delete_footer_button">/g),
     }
-    private promptText:string = "フォローしているユーザーの新着2次絵を一括DLします。DLするページ範囲を選択してください。\n書式:XX-YY(XXページからYYページまで) または ZZ(ZZページのみ)";
+    private promptText:string ="DLするページ範囲を選択してください。\n書式:XX-YY(XXページからYYページまで) または ZZ(ZZページのみ)";
     private commonErrorMes:string = "エラーが発生しました。コンソールを参照してください。";
+    /**
+     * startPoint?:number - cursor
+     * endPoint?:number - cursor
+     */
+    private startPoint?:number;
+    private endPoint?:number;
 
     constructor(){
       this.str = [];
+      this.array = [];
+    }
+
+    public destructor():void{
+      this.str = [];
+      this.array = [];
+      this.startPoint = null;
+      this.endPoint = null;
+      console.log("destructor method called - all processes has been perished");
     }
 
     /**
-    * private ajax - main function to obtain the html source of specific content
+    * private ajax - main method to obtain the html source of the specific content
     *
     * @param  {string} url - specific
     * @return {Promise<string>}
     */
     private async ajax(url:string):Promise<{data:string;error:boolean}>{
       try{
+        await common.wait(300);
         const res:string = await $.ajax(url,{
           type:"GET",
           dataType:"html"
         });
         return {"data":res,"error":false};
       }catch(e){
+        if(e.status === 404){
+          return {"data":null,"error":false};
+        }
+        console.log(e, "at private method ajax()");
         return {"data":e.message,"error":true};
       }
     }
 
-    public async view():Promise<boolean>{
+    public async view():Promise<number>{
       const queries = common.getUrlVars();
       this.array = [queries["id"]];
-      this.getImg();
-      return true;
+      await this.getImg();
+      return 0;
     }
 
-    public async likeduser():Promise<boolean>{
+    public async likeduser():Promise<number>{
       const range = this.showRangePrompt();
-      if (!range){return false;}
+      if (!range){return 1;}
       common.showBg();
       if(~range.indexOf("-")){
         const ranges = range.split("-");
-        const startPoint = Number(ranges[0]);
-        const endPoint = Number(ranges[1]);
-        for (let i = startPoint; i < endPoint + 1; ++i){
+        this.startPoint = Number(ranges[0]);
+        this.endPoint = Number(ranges[1]);
+        for (let i = this.startPoint; i < this.endPoint + 1; ++i){
           const {res,error} = await this.scraper("like_user_view.php","?p=" + i);
-          if(error){return false;}
+          if(error){return 1;}
           Array.prototype.push.apply(this.array,res);
         }
       }else{
-        const {res,error} = await this.scraper("like_user_view.php","?p=" + Number(range));
-        if(error){return false;}
+        const {res,error} = await this.scraper("like_user_view.php","?p=" + range);
+        if(error){return 1;}
         Array.prototype.push.apply(this.array,res);
       }
       if(this.array){
-        this.getImg();
-        return true;
+        await this.getImg();
+        return 0;
       }
-      return false;
+      return 1;
     }
 
-    public async userpage():Promise<boolean>{
+    public async userpage():Promise<number>{
       const queries = common.getUrlVars();
       const range = this.showRangePrompt();
       const fileName = window.location.href.match(".+/(.+?)([\?#;].*)?$")[1];
       const matcher = fileName === "members_illust.php" ? "membersMainContainer" : "memIndexToApplication";
-      if(!range){return false;}
+      if(!range){return 1;}
       common.showBg();
       if(~range.indexOf("-")){
         const ranges = range.split("-");
-        const startPoint = Number(ranges[0]);
-        const endPoint = Number(ranges[1]);
-        for(let i = startPoint; i < endPoint + 1; ++i){
+        this.startPoint = Number(ranges[0]);
+        this.endPoint = Number(ranges[1]);
+        for(let i = this.startPoint; i < this.endPoint + 1; ++i){
           const {res,error} = await this.scraper(fileName,"?id=" + queries["id"] + "&p=" + i,matcher);
-          if(error){return false;}
+          if(error){return 1;}
           Array.prototype.push.apply(this.array,res);
         }
       }else{
-        const {res,error} = await this.scraper(fileName,"?id=" + queries["id"] + "&p=" + Number(range),matcher);
-        if(error){return false;}
+        const {res,error} = await this.scraper(fileName,"?id=" + queries["id"] + "&p=" + range,matcher);
+        if(error){return 1;}
         Array.prototype.push.apply(this.array,res);
       }
       if(this.array){
-        this.getImg();
-        return true;
+        await this.getImg();
+        return 0;
       }
-      return false;
+      return 1;
+    }
+
+    public async likeview():Promise<number>{
+      const queries = common.getUrlVars();
+      const range = this.showRangePrompt();
+      if(!range){return 1;}
+      common.showBg();
+      if(~range.indexOf("-")){
+        const ranges = range.split("-");
+        this.startPoint = Number(ranges[0]);
+        this.endPoint = Number(ranges[1]);
+        for(let i = this.startPoint; i < this.endPoint + 1; ++i){
+          const {res,error} = await this.scraper("user_like_illust_view.php","?id=" + queries["id"] + "&p=" + i,"memIndex");
+          if(error){return 1;}
+          Array.prototype.push.apply(this.array,res);
+        }
+      }else{
+        const {res,error} = await this.scraper("user_like_illust_view.php","?id=" + queries["id"] + "&p=" + range,"memIndex");
+        if(error){return 1;}
+        Array.prototype.push.apply(this.array,res);
+      }
+      if(this.array){
+        await this.getImg();
+        return 0;
+      }
+      return 1;
+    }
+
+    public async favorite():Promise<number>{
+      let queries = common.getUrlVars();
+      if(!queries["sort"]){
+        queries["sort"] = 0;
+      }
+      queries["sort"] = Number(queries["sort"]);
+      const range = this.showRangePrompt();
+      if(!range){return 1;}
+      common.showBg();
+      if(~range.indexOf("-")){
+        const ranges = range.split("-");
+        this.startPoint = Number(ranges[0]);
+        this.endPoint = Number(ranges[1]);
+        for(let i = this.startPoint; i < this.endPoint + 1; ++i){
+          const {res,error} = await this.scraper("okiniiri.php","?sort=" + queries["sort"] + "&p=" + i,"formMethod");
+          if(error){return 1;}
+          Array.prototype.push.apply(this.array,res);
+        }
+      }else{
+        const {res,error} = await this.scraper("okiniiri.php","?sort=" + queries["sort"] + "&p=" + range,"formMethod");
+        if(error){return 1;}
+        Array.prototype.push.apply(this.array,res);
+      }
+      if(this.array){
+        await this.getImg();
+        return 0;
+      }
+      return 1;
     }
 
     private showRangePrompt():string{
@@ -186,7 +271,15 @@ $(async ()=>{
       .replace(/(ー|－|―)/g,"-");
     }
 
-    public async scraper(uri:string,params:string,container:string = "mainContainer", box: string = "mozamoza"):Promise<{res?:string[],error:boolean}>{
+    /**
+     * private scraper
+     * @param  {string} uri - target url to scrape
+     * @param  {string} params - parameters for target url
+     * @param  {string} container - from defaultExps, the start point of RegExp
+     * @param  {string} box - from defaultExps, the target container of of scraping
+     * @return  {Promise<{res?:string[],error:boolean}>}
+     */
+    private async scraper(uri:string,params:string,container:string = "mainContainer", box: string = "mozamoza"):Promise<{res?:string[],error:boolean}>{
       let array = [];
       const {data,error} = await this.ajax("//nijie.info/" + uri + params);
       try{
@@ -204,7 +297,8 @@ $(async ()=>{
         for(let s = 0; s < scrap.length; ++s){
           const targetId = scrap[s].match(/\d{1,7}/g)[0];
           array.push(targetId);
-          $("#details").html(`<p>Getting : ${targetId}</p>`);
+          const current = params.match(/(?<=\&p\=)\d+/)[0];
+          $("#details").html(`<p>Getting illust summary /  (${current} of ${this.startPoint ? this.endPoint - this.startPoint + 1 : current})</p>`);
         }
         return {res:array,error:false};
       }catch(e){
@@ -217,7 +311,7 @@ $(async ()=>{
             alert(this.commonErrorMes);
           break;
         }
-        return {error:true,res:null};
+        return {error:true,res:[]};
       }
     }
 
@@ -238,6 +332,9 @@ $(async ()=>{
           console.log(data);
           alert(this.commonErrorMes);
           return false;
+        }
+        if(data === null){ // when server responded with error response code
+          continue;
         }
         count++;
         let j = data.match(/<div id=('|")img_window('|").*?<div id=('|")view-center('|")/g)[0].match(/('|")\/\/pic(|\d+).*?('|")/g);
@@ -273,7 +370,7 @@ $(async ()=>{
               j[s] = j[s].replace(/"/g,"");
               urlarr.push("&url=" + j[s] + "&title=" + title[0].replace(/%/g,"％") + "&id=" + ogp);
             }
-            $("#details").html("<p>" + Math.round((s / j.length) * 100 ) + "% completed. added:" + j[s] + "<br>" + title + "</p>");
+            $("#details").html(`<p>PROGRESS : ${count} of ${timer} completed. (${Math.round(count / timer * 100)} %)<br>${j[s]}<br>${title}</p>`);
             if (count === timer) {
               this.post(urlarr.toString());
             }
@@ -314,7 +411,7 @@ $(async ()=>{
       }else{
           alert(noconftxt);
       }
-      $("#wrapper").fadeOut("slow",function(){$("#wrapper").remove();});
+      common.removeBg();
       return true;
     }
 
@@ -330,8 +427,8 @@ $(async ()=>{
       if (!fname){fname = "$o";}
       if(!this.geturiv.match("noconf=1")){
         if (!confirm(ptimes + "個の画像をダウンロードしますか？")) {
-          $("#wrapper").fadeOut("slow",function() {
-            $("#wrapper").remove();
+          $("#_wrapper").fadeOut("slow",function() {
+            $("#_wrapper").remove();
           });
           return false;
         }
@@ -370,9 +467,7 @@ $(async ()=>{
       document.body.appendChild(form);
       form.submit();
       this.str = [];
-      $("#wrapper").fadeOut("slow",function(){
-        $("#wrapper").remove();
-      });
+      common.removeBg();
       return true;
     }
 
@@ -383,7 +478,7 @@ $(async ()=>{
     * @param  {string} params url parameters to set up
     * @return {boolean}       success or fail
     */
-    private post(query:string,params:string = "?lang=jp"): boolean {
+    private post(query:string,params:string = "?lang=jp"):boolean {
       $('<form/>', {
         action: 'https://nijie.poyashi.me/dl.php' + params,
         method: 'post'
@@ -413,20 +508,44 @@ $(async ()=>{
   }
 
   const common = new commonFunc();
-  init();
 
-  async function init() :Promise<any>{
+  async function init():Promise<any>{
+    const _destruct = ()=>{
+      common.removeBg();
+      main.destructor();
+    }
     if (!window.location.href.match("nijie.info")) {
       return alert("対応サイト上でのみ本ブックマークレットをお使いいただけます。");
     }
     var currentPage:string = window.location.href.match(".+/(.+?)([\?#;].*)?$")[1];
     const main = new mainFunc();
-    switch(currentPage){
-      case "view.php": return await main.view();
-      case "like_user_view.php": return await main.likeduser();
-      case "members_illust.php":
-      case "members_dojin.php": return await main.userpage();
+    try{
+      const res = async ():Promise<number>=>{
+        switch(currentPage){
+          case "view_popup.php":
+          case "view.php": return await main.view();
+          case "like_user_view.php": return await main.likeduser();
+          case "members_illust.php":
+          case "members_dojin.php": return await main.userpage();
+          case "okiniiri.php": return await main.favorite();
+          case "user_like_illust_view.php" : return await main.likeview();
+          default: return 2;
+        }
+      }
+      res().then(res=>{
+        if(res === 2){
+          alert("このページには対応していません。");
+        }
+        _destruct();
+      });
+    }catch(e){
+      alert("エラーが発生したため処理を続行できません。\nコマンドログを確認してください。");
+      console.log(e);
+      _destruct();
     }
+    return 0;
   }
+
+  init();
 
 });
