@@ -1,3 +1,4 @@
+//import * as $ from "jquery";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -6,7 +7,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-//import * as $ from "jquery";
 $(() => __awaiter(this, void 0, void 0, function* () {
     const commonFunc = class {
         /**
@@ -152,6 +152,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
             return __awaiter(this, void 0, void 0, function* () {
                 const queries = common.getUrlVars();
                 this.array = [queries["id"]];
+                common.showBg();
                 yield this.getImg();
                 return 0;
             });
@@ -278,10 +279,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
         }
         /**
          * private scraper
-         * @param  {string} uri - target url to scrape
          * @param  {string} params - parameters for target url
-         * @param  {string} container - from defaultExps, the start point of RegExp
-         * @param  {string} box - from defaultExps, the target container of of scraping
          * @return  {Promise<{res?:string[],error:boolean}>}
          */
         scraper(params) {
@@ -305,7 +303,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
                     for (let s = 0; s < scrap.length; ++s) {
                         const targetId = scrap[s].match(/\d{1,7}/g)[0];
                         array.push(targetId);
-                        const current = params.match(/(?<=\&p\=)\d+/)[0];
+                        const current = params.match(/p\=\d+/)[0].replace("p=", "");
                         $("#details").html(`<p>GETTING ILLUST SUMMARY: (${current} of ${this.startPoint ? this.endPoint - this.startPoint + 1 : current})</p>`);
                     }
                     return { res: array, error: false };
@@ -352,36 +350,33 @@ $(() => __awaiter(this, void 0, void 0, function* () {
                     let ogp = data.match(/<meta name="twitter:url".*?<meta name="twitter:title"/);
                     ogp = ogp[0].match(/\d{1,15}/);
                     for (let s = 0; s < j.length; s++) {
+                        let datalist = new Object();
                         processtimes++;
+                        datalist["id"] = ogp[0];
+                        datalist["illustrator"] = title[0].replace(/(ニジエ|<title>|<\/title>)/g, "").replace(/\//g, "／").match(/ \| .*? \|/g)[0].replace(/ \| | \|/g, "").replace(/%/g, "％");
+                        datalist["title"] = title[0].match(/<title>.*? \| /g)[0].replace(/(<title>| \| )/g, "").replace(/%/g, "％");
+                        datalist["url"] = j[s].replace(/"/g, "");
+                        datalist["cnt"] = processtimes;
+                        datalist["current"] = s + 1;
+                        datalist["pageSum"] = j.length;
+                        $("#details").html(`<p>PROGRESS : ${count} of ${timer} completed. (${Math.round(count / timer * 100)} %)<br>${j[s]}<br>${title}</p>`);
                         if (this.geturiv.match(/storage=(2|3)/)) {
-                            let datalist = new Object();
-                            if (!j[s].match(/(sp| \/|small)/)) {
-                                j[s] = j[s].replace(/"/g, "");
-                                let existence = false;
-                                datalist["id"] = ogp[0];
-                                datalist["illustrator"] = title[0].replace(/(ニジエ|<title>|<\/title>)/g, "").replace(/\//g, "／").match(/ \| .*? \|/g)[0].replace(/ \| | \|/g, "").replace(/%/g, "％");
-                                datalist["title"] = title[0].match(/<title>.*? \| /g)[0].replace(/(<title>| \| )/g, "").replace(/%/g, "％");
-                                datalist["url"] = j[s];
-                                this.str.push(JSON.stringify(datalist));
-                                for (let i = 0; i < localStorage.length; i++) {
-                                    let getItem = $.parseJSON(localStorage.getItem("illust-" + ("0000" + Number(i + 1)).slice(-5)));
-                                    if (getItem && getItem["url"].match(j[s].replace(/__rs_l120x120\//g, ""))) {
-                                        stimes++;
-                                        existence = true;
-                                        break;
-                                    }
+                            let existence = false;
+                            this.str.push(JSON.stringify(datalist));
+                            for (let i = 0; i < localStorage.length; i++) {
+                                let getItem = $.parseJSON(localStorage.getItem("illust-" + ("0000" + Number(i + 1)).slice(-5)));
+                                if (getItem && getItem["url"].match(j[s].replace(/__rs_l120x120\//g, ""))) {
+                                    stimes++;
+                                    existence = true;
+                                    break;
                                 }
-                                if (!existence) {
-                                    this.setItemToStorage(datalist);
-                                }
+                            }
+                            if (!existence) {
+                                this.setItemToStorage(datalist);
                             }
                         }
                         else {
-                            if (!j[s].match(/(sp| \/|small)/)) {
-                                j[s] = j[s].replace(/"/g, "");
-                                urlarr.push("&url=" + j[s] + "&title=" + title[0].replace(/%/g, "％") + "&id=" + ogp);
-                            }
-                            $("#details").html(`<p>PROGRESS : ${count} of ${timer} completed. (${Math.round(count / timer * 100)} %)<br>${j[s]}<br>${title}</p>`);
+                            urlarr.push(JSON.stringify(datalist));
                             if (count === timer) {
                                 this.post(urlarr.toString());
                             }
@@ -391,7 +386,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
                         this.sendSt2(stimes, processtimes);
                     }
                     else if (this.geturiv.match(/storage=3/) && count == timer) {
-                        this.download(processtimes);
+                        yield this.download(processtimes);
                     }
                 }
             });
@@ -431,58 +426,61 @@ $(() => __awaiter(this, void 0, void 0, function* () {
         * private download - description
         *
         * @param  {number} ptimes
-        * @param  {string} data
         * @return {boolean} success or fail
         */
         download(ptimes) {
-            let fname = this.geturiv.match(/&quot;.*?&quot;/)[0].replace(/&quot;/g, "");
-            if (!fname) {
-                fname = "$o";
-            }
-            if (!this.geturiv.match("noconf=1")) {
-                if (!confirm(ptimes + "個の画像をダウンロードしますか？")) {
-                    $("#_wrapper").fadeOut("slow", function () {
-                        $("#_wrapper").remove();
-                    });
+            return __awaiter(this, void 0, void 0, function* () {
+                let fname = this.geturiv.match(/&quot;.*?&quot;/)[0].replace(/&quot;/g, "");
+                if (!fname) {
+                    fname = "$o";
+                }
+                if (!this.geturiv.match("noconf=1")) {
+                    if (!confirm(ptimes + "個の画像をダウンロードしますか？")) {
+                        $("#_wrapper").fadeOut("slow", function () {
+                            $("#_wrapper").remove();
+                        });
+                        return false;
+                    }
+                }
+                let i = 0;
+                let arr = new Array();
+                for (let key of this.str) {
+                    key = $.parseJSON(key);
+                    const oname = key["url"].match(".+/(.+?)([\?#;].*)?$")[1];
+                    const oid = oname.match(/.*?_/) ? oname.match(/.*?_/)[0].replace("_", "") : "unknown";
+                    const fileext = oname.split(".") ? oname.split(".")[1] : "jpg";
+                    const ffname = oname.split(".") ? oname.split(".")[0] : "unknown";
+                    const filename = fname.replace(/\$o/g, ffname)
+                        .replace(/\$r/g, common.formatDate(new Date(), "YYYYMMDD"))
+                        .replace(/\$d/g, common.formatDate(new Date(), "hhmmssSSS"))
+                        .replace(/\$n/, key["current"])
+                        .replace(/\$s/g, key["pageSum"])
+                        .replace(/\$u/g, key["illustrator"])
+                        .replace(/\$l/g, oid)
+                        .replace(/\$i/g, key["id"])
+                        .replace(/\$t/g, key["title"]);
+                    arr.push({ "filename": filename + "." + fileext, "href": key["url"] });
+                    i++;
+                }
+                const proxy = "https://proxy.poyashi.me/?type=nijie&url=";
+                if (!arr) {
                     return false;
                 }
-            }
-            let i = 0;
-            let arr = new Array();
-            for (let key of this.str) {
-                key = $.parseJSON(key);
-                const oname = key["url"].match(".+/(.+?)([\?#;].*)?$")[1];
-                const oid = oname.match(/.*?_/) ? oname.match(/.*?_/)[0].replace("_", "") : "unknown";
-                const fileext = oname.split(".") ? oname.split(".")[1] : "jpg";
-                const ffname = oname.split(".") ? oname.split(".")[0] : "unknown";
-                const filename = fname.replace(/\$o/g, ffname)
-                    .replace(/\$r/g, common.formatDate(new Date(), "YYYYMMDD"))
-                    .replace(/\$d/g, common.formatDate(new Date(), "hhmmssSSS"))
-                    .replace(/\$n/, ("000" + Number(i + 1)).slice(-4))
-                    .replace(/\$u/g, key["illustrator"])
-                    .replace(/\$l/g, oid)
-                    .replace(/\$i/g, key["id"])
-                    .replace(/\$t/g, key["title"]);
-                arr.push('{"filename":"' + filename + "." + fileext + '","href":"' + key["url"] + '"}');
-                i++;
-            }
-            const iframe = document.createElement("iframe");
-            document.body.appendChild(iframe);
-            iframe.contentWindow.name = "iflr";
-            const form = document.createElement("form");
-            form.target = "iflr";
-            form.action = "https://nijie.poyashi.me/download_get.php";
-            form.method = "POST";
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "q";
-            input.value = JSON.stringify(arr);
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-            this.str = [];
-            common.removeBg();
-            return true;
+                for (let j = 0; j < arr.length; j++) {
+                    $("#details").html(arr.length + "枚中" + Number(j + 1) + "枚目のダウンロードを準備しています...<br/>" + arr[j]["filename"]);
+                    const res = yield fetch(proxy + arr[j]["href"], { method: "GET" });
+                    if (!res.ok) {
+                        alert("Invalid status code returned while processing requests.");
+                        console.log(res);
+                    }
+                    const link = document.createElement('a');
+                    link.download = arr[j]["filename"];
+                    link.href = window.URL.createObjectURL(yield res.blob());
+                    link.click();
+                }
+                $("#details").html("ダウンロードが完了しました");
+                return true;
+            });
         }
         /**
         * public post - description
@@ -493,7 +491,7 @@ $(() => __awaiter(this, void 0, void 0, function* () {
         */
         post(query, params = "?lang=jp") {
             $('<form/>', {
-                action: 'https://nijie.poyashi.me/dl.php' + params,
+                action: 'https://nijie.poyashi.me/downloader' + params,
                 method: 'post'
             })
                 .append($('<input/>', {

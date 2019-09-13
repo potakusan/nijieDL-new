@@ -2,6 +2,6 @@
  "compileOnSave": true,
  "compilerOptions":{
   "target": "es6",
-  "outFile": "main.js"
+  "lib": ["ES2016","DOM"]
  }
 }

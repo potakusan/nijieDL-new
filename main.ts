@@ -166,6 +166,7 @@ $(async ()=>{
     public async view():Promise<number>{
       const queries = common.getUrlVars();
       this.array = [queries["id"]];
+      common.showBg();
       await this.getImg();
       return 0;
     }
@@ -278,10 +279,7 @@ $(async ()=>{
 
     /**
      * private scraper
-     * @param  {string} uri - target url to scrape
      * @param  {string} params - parameters for target url
-     * @param  {string} container - from defaultExps, the start point of RegExp
-     * @param  {string} box - from defaultExps, the target container of of scraping
      * @return  {Promise<{res?:string[],error:boolean}>}
      */
     private async scraper(params:string):Promise<{res?:string[],error:boolean}>{
@@ -304,7 +302,7 @@ $(async ()=>{
         for(let s = 0; s < scrap.length; ++s){
           const targetId = scrap[s].match(/\d{1,7}/g)[0];
           array.push(targetId);
-          const current = params.match(/(?<=\&p\=)\d+/)[0];
+          const current = params.match(/p\=\d+/)[0].replace("p=","");
           $("#details").html(`<p>GETTING ILLUST SUMMARY: (${current} of ${this.startPoint ? this.endPoint - this.startPoint + 1 : current})</p>`);
         }
         return {res:array,error:false};
@@ -349,35 +347,32 @@ $(async ()=>{
         let ogp = data.match(/<meta name="twitter:url".*?<meta name="twitter:title"/);
         ogp = ogp[0].match(/\d{1,15}/);
         for (let s = 0; s < j.length; s++) {
+          let datalist:Object = new Object();
           processtimes++;
+          datalist["id"] = ogp[0];
+          datalist["illustrator"] = title[0].replace(/(ニジエ|<title>|<\/title>)/g, "").replace(/\//g, "／").match(/ \| .*? \|/g)[0].replace(/ \| | \|/g,"").replace(/%/g,"％");
+          datalist["title"] =  title[0].match(/<title>.*? \| /g)[0].replace(/(<title>| \| )/g,"").replace(/%/g,"％");
+          datalist["url"] = j[s].replace(/"/g,"");
+          datalist["cnt"] = processtimes;
+          datalist["current"] = s+1;
+          datalist["pageSum"] = j.length;
+          $("#details").html(`<p>PROGRESS : ${count} of ${timer} completed. (${Math.round(count / timer * 100)} %)<br>${j[s]}<br>${title}</p>`);
           if(this.geturiv.match(/storage=(2|3)/)){
-            let datalist:Object = new Object();
-            if (!j[s].match(/(sp| \/|small)/)){
-              j[s] = j[s].replace(/"/g,"");
-              let existence:boolean = false;
-              datalist["id"] = ogp[0];
-              datalist["illustrator"] = title[0].replace(/(ニジエ|<title>|<\/title>)/g, "").replace(/\//g, "／").match(/ \| .*? \|/g)[0].replace(/ \| | \|/g,"").replace(/%/g,"％");
-              datalist["title"] =  title[0].match(/<title>.*? \| /g)[0].replace(/(<title>| \| )/g,"").replace(/%/g,"％");
-              datalist["url"] = j[s];
-              this.str.push(JSON.stringify(datalist));
-              for (let i = 0; i < localStorage.length; i++) {
-                let getItem = $.parseJSON(localStorage.getItem("illust-" + ("0000" + Number(i+1)).slice(-5)));
-                if(getItem && getItem["url"].match(j[s].replace(/__rs_l120x120\//g, ""))){
-                  stimes++;
-                  existence = true;
-                  break;
-                }
+            let existence:boolean = false;
+            this.str.push(JSON.stringify(datalist));
+            for (let i = 0; i < localStorage.length; i++) {
+              let getItem = $.parseJSON(localStorage.getItem("illust-" + ("0000" + Number(i+1)).slice(-5)));
+              if(getItem && getItem["url"].match(j[s].replace(/__rs_l120x120\//g, ""))){
+                stimes++;
+                existence = true;
+                break;
               }
-              if (!existence){
-                this.setItemToStorage(datalist);
-              }
+            }
+            if (!existence){
+              this.setItemToStorage(datalist);
             }
           }else{
-            if (!j[s].match(/(sp| \/|small)/)){
-              j[s] = j[s].replace(/"/g,"");
-              urlarr.push("&url=" + j[s] + "&title=" + title[0].replace(/%/g,"％") + "&id=" + ogp);
-            }
-            $("#details").html(`<p>PROGRESS : ${count} of ${timer} completed. (${Math.round(count / timer * 100)} %)<br>${j[s]}<br>${title}</p>`);
+            urlarr.push(JSON.stringify(datalist));
             if (count === timer) {
               this.post(urlarr.toString());
             }
@@ -386,7 +381,7 @@ $(async ()=>{
         if(this.geturiv.match(/storage=2/) && count == timer){
           this.sendSt2(stimes,processtimes);
         }else if(this.geturiv.match(/storage=3/) && count == timer){
-          this.download(processtimes);
+          await this.download(processtimes);
         }
       }
     }
@@ -426,10 +421,9 @@ $(async ()=>{
     * private download - description
     *
     * @param  {number} ptimes
-    * @param  {string} data
     * @return {boolean} success or fail
     */
-    private download(ptimes:number):boolean{
+    private async download(ptimes:number):Promise<boolean>{
       let fname:string = this.geturiv.match(/&quot;.*?&quot;/)[0].replace(/&quot;/g,"");
       if (!fname){fname = "$o";}
       if(!this.geturiv.match("noconf=1")){
@@ -441,7 +435,7 @@ $(async ()=>{
         }
       }
       let i:number = 0;
-      let arr:string[] = new Array();
+      let arr:Object[] = new Array();
       for (let key of this.str){
         key = $.parseJSON(key);
         const oname = key["url"].match(".+/(.+?)([\?#;].*)?$")[1];
@@ -451,30 +445,30 @@ $(async ()=>{
         const filename = fname.replace(/\$o/g, ffname)
         .replace(/\$r/g, common.formatDate(new Date(), "YYYYMMDD"))
         .replace(/\$d/g, common.formatDate(new Date(), "hhmmssSSS"))
-        .replace(/\$n/, ("000"+Number(i+1)).slice(-4))
+        .replace(/\$n/, key["current"])
+        .replace(/\$s/g, key["pageSum"])
         .replace(/\$u/g, key["illustrator"])
         .replace(/\$l/g, oid)
         .replace(/\$i/g, key["id"])
         .replace(/\$t/g, key["title"]);
-        arr.push('{"filename":"'+filename+"."+fileext + '","href":"'+key["url"]+'"}');
+        arr.push({"filename":filename + "." + fileext, "href":key["url"] });
         i++;
       }
-      const iframe:HTMLIFrameElement = document.createElement("iframe");
-      document.body.appendChild(iframe);
-      iframe.contentWindow.name = "iflr";
-      const form:HTMLFormElement = document.createElement("form");
-      form.target = "iflr";
-      form.action = "https://nijie.poyashi.me/download_get.php";
-      form.method = "POST";
-      const input:HTMLInputElement = document.createElement("input");
-      input.type = "hidden";
-      input.name = "q";
-      input.value = JSON.stringify(arr);
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
-      this.str = [];
-      common.removeBg();
+      const proxy = "https://proxy.poyashi.me/?type=nijie&url=";
+      if(!arr){ return false; }
+      for (let j = 0; j < arr.length; j++) {
+        $("#details").html(arr.length + "枚中" + Number(j+1) + "枚目のダウンロードを準備しています...<br/>" + arr[j]["filename"]);
+        const res = await fetch(proxy + arr[j]["href"], {method:"GET"});
+        if(!res.ok){
+          alert("Invalid status code returned while processing requests.");
+          console.log(res);
+        }
+        const link = document.createElement('a');
+        link.download = arr[j]["filename"];
+        link.href = window.URL.createObjectURL( await res.blob() );
+        link.click();
+      }
+      $("#details").html("ダウンロードが完了しました");
       return true;
     }
 
@@ -487,7 +481,7 @@ $(async ()=>{
     */
     public post(query:string,params:string = "?lang=jp"):boolean {
       $('<form/>', {
-        action: 'https://nijie.poyashi.me/dl.php' + params,
+        action: 'https://nijie.poyashi.me/downloader' + params,
         method: 'post'
       })
       .append($('<input/>', {
@@ -514,7 +508,7 @@ $(async ()=>{
     }
 
     public sender():number{
-      let tmp;
+      let tmp:string;
       $("html").append("<div id='wrapper'><div id='content_downloader_wrapper'>Loading data. Please wait</div></div><img src='' id='thumbs' style='position: absolute;left: 1376px;top: 461px;display:none;z-index: 114514;border: 1px solid #777;box-shadow: 0px 0px 4px #222;'><style>" +
         "body{transition:.2s; filter:blur(0px)}" +
         "#content_downloader_wrapper button#send, #content_downloader_wrapper button.close {padding: 10px;font-family: YuGothic,'Yu Gothic',sans-serif;color: #222;width: 30%;font-weight: 500;}" +
